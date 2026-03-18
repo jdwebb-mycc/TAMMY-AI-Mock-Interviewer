@@ -1,0 +1,8 @@
+{
+  "name": "TAMMY: AI Mock Interviewer",
+  "description": "An advanced AI-powered mock interview platform for all career levels, featuring adaptive follow-up questions and video-based coaching by T.A.M.M.Y.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
