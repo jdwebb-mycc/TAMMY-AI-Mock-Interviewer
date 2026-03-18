@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function isSuperAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin' ||
+         ((request.auth.token.email == "james.webb@mycomputercareer.com" || request.auth.token.email == "timothy.pillard@mycomputercareer.com" || request.auth.token.email == "richard.saltares@mycomputercareer.com") && request.auth.token.email_verified == true));
+    }
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || isSuperAdmin());
+    }
+    function isAdvisor() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'advisor';
+    }
+    function isAssignedAdvisor(studentId) {
+      let student = get(/databases/$(database)/documents/users/$(studentId)).data;
+      return isAdvisor() && student.assignedAdvisorId == request.auth.uid;
+    }
+
+    function isValidUser(data) {
+      return data.uid is string &&
+             data.email is string &&
+             data.role in ['student', 'advisor', 'admin', 'super_admin'] &&
+             (!('hasCompletedTutorial' in data) || data.hasCompletedTutorial is bool) &&
+             (!('points' in data) || data.points is int) &&
+             (!('badges' in data) || data.badges is list) &&
+             (!('totalInterviews' in data) || data.totalInterviews is int) &&
+             (!('currentStage' in data) || data.currentStage in ['Stage 1 — AI Practice', 'Stage 2 — Recorded Interview', 'Stage 3 — Advisor Required', 'Stage 4 — Live Mock Interview Scheduled', 'Stage 5 — Completed']);
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAssignedAdvisor(userId) || isAdmin();
+      allow create: if isAuthenticated() && (isOwner(userId) || isSuperAdmin()) && isValidUser(request.resource.data);
+      allow update: if (isOwner(userId) || isSuperAdmin() || (isAdmin() && request.resource.data.role == resource.data.role)) && isValidUser(request.resource.data);
+    }
+
+    // Advisor information
+    match /advisors/{advisorId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Interview sessions
+    match /interviews/{interviewId} {
+      allow read: if isAuthenticated() && (resource.data.studentId == request.auth.uid || resource.data.advisorId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.studentId == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && (resource.data.studentId == request.auth.uid || resource.data.advisorId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+  }
+}

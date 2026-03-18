@@ -10,7 +10,9 @@ export enum Competency {
   LEADERSHIP = "Leadership",
   ADAPTABILITY = "Adaptability",
   CULTURAL_ALIGNMENT = "Cultural Alignment",
-  EMOTIONAL_INTELLIGENCE = "Emotional Intelligence"
+  EMOTIONAL_INTELLIGENCE = "Emotional Intelligence",
+  CAREER_ALIGNMENT = "Career Alignment",
+  PROFESSIONAL_IDENTITY = "Professional Identity"
 }
 
 export enum QuestionType {
@@ -18,15 +20,16 @@ export enum QuestionType {
   TECHNICAL = "Technical",
   BEHAVIORAL = "Behavioral",
   SITUATIONAL = "Situational",
-  STRESS_TEST = "Stress Test"
+  STRESS_TEST = "Stress Test",
+  CAREER_FIT = "Career Fit"
 }
 
 export enum InterviewStage {
-  PHONE_SCREEN = "Phone Screen",
-  OPENING = "Opening",
-  CORE = "Core",
-  DEEP_DIVE = "Deep Dive",
-  CLOSING = "Closing"
+  AI_PRACTICE = "Stage 1 — AI Practice",
+  RECORDED_INTERVIEW = "Stage 2 — Recorded Interview",
+  ADVISOR_REQUIRED = "Stage 3 — Advisor Required",
+  LIVE_MOCK_SCHEDULED = "Stage 4 — Live Mock Interview Scheduled",
+  COMPLETED = "Stage 5 — Completed"
 }
 
 export interface SpeechMetrics {
@@ -61,6 +64,18 @@ export interface DiscernmentResult {
   credibilityScore: number;
   confidenceScore: number;
   answerRelevanceScore: number;
+  // New Career Alignment Metrics
+  careerDirectionClarity: number;
+  goalSpecificity: number;
+  resumeCoherence: number;
+  roleAlignment: number;
+  companyAlignment: number;
+  confidenceLanguage: number;
+  ownershipLanguage: number;
+  vaguenessScore: number;
+  ramblingScore: number;
+  motivationStrength: number;
+  consistencyScore: number;
   starComponents: {
     situation: boolean;
     task: boolean;
@@ -71,8 +86,19 @@ export interface DiscernmentResult {
 }
 
 export interface EvaluationResult {
-  readinessBand: "Entry" | "Junior" | "Mid" | "Senior" | "Executive";
+  readinessBand: "Developing" | "Entry" | "Junior" | "Mid" | "Senior" | "Executive";
   hireSignalScore: number;
+  // Predictive Probabilities
+  passPhoneScreenProb: number;
+  passInterviewProb: number;
+  hireSignalProb: number;
+  roleFitProb: number;
+  // Recruiter Simulation Metrics
+  industryLanguageMatch: number;
+  roleKeywordsMatch: number;
+  motivationSpecificity: number;
+  companyResearchSignal: number;
+  valuesAlignment: number;
   strengths: string[];
   weaknesses: string[];
   recruiterRiskFlags: string[];
@@ -136,6 +162,19 @@ export class TammyMemoryStore {
   }
 }
 
+export type InterviewLevel = 
+  | 'entry' 
+  | 'mid' 
+  | 'senior' 
+  | 'leadership' 
+  | 'career_change' 
+  | 'internship';
+
+export type InterviewMode = 
+  | 'challenge' 
+  | 'behavioral' 
+  | 'career_alignment';
+
 /**
  * The T.A.M.M.Y. Cognitive Engine
  */
@@ -162,20 +201,20 @@ export class TammyBrain {
     };
   }
 
-  static getTargetCompetencies(level: string): Competency[] {
+  static getTargetCompetencies(level: InterviewLevel): Competency[] {
     switch (level) {
       case 'entry':
-        return [Competency.TECHNICAL_DEPTH, Competency.ADAPTABILITY];
-      case 'junior':
-        return [Competency.TECHNICAL_DEPTH, Competency.PROBLEM_SOLVING, Competency.COMMUNICATION];
+        return [Competency.TECHNICAL_DEPTH, Competency.ADAPTABILITY, Competency.CAREER_ALIGNMENT];
       case 'mid':
-        return [Competency.TECHNICAL_DEPTH, Competency.PROBLEM_SOLVING, Competency.COMMUNICATION, Competency.LEADERSHIP];
-      case 'executive':
-        return [Competency.LEADERSHIP, Competency.EMOTIONAL_INTELLIGENCE, Competency.CULTURAL_ALIGNMENT];
-      case 'behavioral':
-        return [Competency.COMMUNICATION, Competency.EMOTIONAL_INTELLIGENCE, Competency.ADAPTABILITY];
+        return [Competency.TECHNICAL_DEPTH, Competency.PROBLEM_SOLVING, Competency.COMMUNICATION, Competency.CAREER_ALIGNMENT];
+      case 'senior':
+        return [Competency.TECHNICAL_DEPTH, Competency.PROBLEM_SOLVING, Competency.LEADERSHIP, Competency.PROFESSIONAL_IDENTITY];
       case 'leadership':
-        return [Competency.LEADERSHIP, Competency.PROBLEM_SOLVING, Competency.EMOTIONAL_INTELLIGENCE];
+        return [Competency.LEADERSHIP, Competency.EMOTIONAL_INTELLIGENCE, Competency.CULTURAL_ALIGNMENT, Competency.PROFESSIONAL_IDENTITY];
+      case 'career_change':
+        return [Competency.ADAPTABILITY, Competency.CAREER_ALIGNMENT, Competency.COMMUNICATION];
+      case 'internship':
+        return [Competency.ADAPTABILITY, Competency.TECHNICAL_DEPTH, Competency.CAREER_ALIGNMENT];
       default:
         return [Competency.COMMUNICATION];
     }

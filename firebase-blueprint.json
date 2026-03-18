@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "advisor", "admin", "super_admin"] },
+        "assignedAdvisorId": { "type": "string" },
+        "hasCompletedTutorial": { "type": "boolean" },
+        "points": { "type": "integer" },
+        "badges": { "type": "array", "items": { "type": "string" } },
+        "totalInterviews": { "type": "integer" },
+        "currentStage": { "type": "string", "enum": ["Stage 1 — AI Practice", "Stage 2 — Recorded Interview", "Stage 3 — Advisor Required", "Stage 4 — Live Mock Interview Scheduled", "Stage 5 — Completed"] }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Advisor": {
+      "title": "Advisor",
+      "description": "Career Services Advisor information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "calendarLink": { "type": "string" }
+      },
+      "required": ["id", "name", "calendarLink"]
+    },
+    "Interview": {
+      "title": "Interview",
+      "description": "Mock interview session data",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "advisorId": { "type": "string" },
+        "roleLevel": { "type": "string" },
+        "resumeContent": { "type": "string" },
+        "jdContent": { "type": "string" },
+        "mode": { "type": "string" },
+        "scores": {
+          "type": "object",
+          "properties": {
+            "confidence": { "type": "number" },
+            "clarity": { "type": "number" },
+            "alignment": { "type": "number" },
+            "hireSignal": { "type": "string" }
+          }
+        },
+        "log": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": { "type": "string" },
+              "answer": { "type": "string" }
+            }
+          }
+        },
+        "scheduledDate": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "studentId", "advisorId", "roleLevel", "mode"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/advisors/{advisorId}": {
+      "schema": "Advisor",
+      "description": "Advisor information"
+    },
+    "/interviews/{interviewId}": {
+      "schema": "Interview",
+      "description": "Interview sessions"
+    }
+  }
+}
